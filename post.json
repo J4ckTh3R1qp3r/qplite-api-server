@@ -1,0 +1,17 @@
+[
+    {
+        "title": "Post_number_1",
+        "content": "Content 1 for post 1",
+        "picture": "surf.jpg"
+    },
+    {
+        "title": "Post_number_2",
+        "content": "Content 2 for post 2, very interesting",
+        "picture": "surf.jpg"
+    },
+    {
+        "title": "Post_number_3",
+        "content": "Content 3 for post 3",
+        "picture": "surf.jpg"
+    }
+]

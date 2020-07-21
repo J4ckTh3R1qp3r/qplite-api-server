@@ -1,0 +1,230 @@
+import 'dart:io';
+import 'package:angel_framework/angel_framework.dart';
+import 'package:angel_framework/http.dart';
+import 'package:file/local.dart';
+import 'package:mongo_dart/mongo_dart.dart';
+import 'dart:convert';
+import 'package:uuid/uuid.dart';
+import 'package:angel_simple/src/config.dart' as config;
+import 'package:angel_simple/src/auth.dart' as auth;
+
+const assetsPath = 'http://assets.cutlet.co/';
+
+Future configureServer(Angel app) async {
+  var fs = const LocalFileSystem();
+  await app.configure(config.configureServer(fs));
+}
+
+void main() async {
+  /////////
+  var app = Angel();
+  var http = AngelHttp(app);
+  await app.configure(configureServer);
+
+  var db = Db('mongodb://localhost:27017/qplite');
+  await db.open();
+  print('connected');
+
+  var collPosts = db.collection('posts');
+  var collUsers = db.collection('users');
+  var collUserSessions = db.collection('userSessions');
+
+  app
+    /////////////--------------------------------------------------AUTHORISATION
+    ..get('/login', (req, res) async {
+      var authStatus = await auth.checkCookie(req, collUserSessions);
+      if (!authStatus) {
+        res.headers.addAll({'Set-Cookie': 'userToken=;Max-Age=0'});
+        await res.render('login');
+      } else {
+        await res.redirect('/secret');
+      }
+    })
+    ..post('/login', (req, res) async {
+      var inputValidation =
+          await auth.checkInputs(req, collUsers, collUserSessions);
+      if (!inputValidation) {
+        res.write('Incorrect  login or password');
+      } else {
+        var session = {
+          'username': req.bodyAsMap['username'],
+          'sessionToken': Uuid().v4()
+        };
+        await collUserSessions.save(session);
+        res.cookies.add(Cookie(
+            'userToken', base64.encode(utf8.encode(json.encode(session)))));
+        await res.redirect('/secret');
+      }
+    })
+    ..get('/secret', (req, res) async {
+      var authStatus = await auth.checkCookie(req, collUserSessions);
+      if (!authStatus) {
+        res.headers.addAll({'Set-Cookie': 'userToken=;Max-Age=0'});
+        await res.redirect('/login');
+      } else {
+        await res.render('secret');
+      }
+    })
+    ..get('/logout', (req, res) async {
+      var logoutStatus = await auth.logoutUser(req, collUserSessions);
+      if (logoutStatus) {
+        res.headers.addAll({'Set-Cookie': 'userToken=;Max-Age=0'});
+        await res.render('logout');
+      } else {
+        await res.redirect('/login');
+      }
+    })
+    // UNCOMMENT FOR REGISTRATION USE CASE
+    //
+    //
+    // ..get('/register', (req, res) async {
+    //   var authStatus = await auth.checkCookie(req, collUserSessions);
+    //   if (!authStatus) {
+    //     res.headers.addAll({'Set-Cookie': 'userToken=;Max-Age=0'});
+    //     await res.render('register');
+    //   } else {
+    //     await res.redirect('/secret');
+    //   }
+    // })
+    // ..post('/register', (req, res) async {
+    //   var registerStatus = await auth.registerUser(req, collUsers);
+    //   if (registerStatus) {
+    //     var session = {
+    //       'username': req.bodyAsMap['username'],
+    //       'sessionToken': Uuid().v4()
+    //     };
+    //     await collUserSessions.save(session);
+    //     res.cookies.add(Cookie(
+    //         'userToken', base64.encode(utf8.encode(json.encode(session)))));
+    //     await res.redirect('/secret');
+    //   } else {
+    //     res.write('The user ${req.bodyAsMap['username']} already exist');
+    //     await res.close();
+    //   }
+    // })
+    /////////////--------------------------------------------------API---METHODS
+    // GET --- all --- posts
+    ..get('/posts', (req, res) async {
+      var posts = await collPosts.find().toList();
+      var json = jsonEncode(posts);
+      res.write(json);
+      await res.close();
+    })
+    // DELETE --- all --- posts --- BY ID JSON
+    ..delete('/posts', (req, res) async {
+      var authStatus = await auth.checkCookie(req, collUserSessions);
+      if (authStatus) {
+        await req.parseBody();
+        String postsToDelete = req.bodyAsMap['idArray'];
+        List decodedPosts = json.decode(postsToDelete);
+        decodedPosts.forEach((element) async {
+          await collPosts.remove(where.id(ObjectId.parse(element['id'])));
+        });
+        await res.close();
+      } else {
+        await res.redirect('/login');
+      }
+    })
+    // GET --- one --- post --- by URI
+    ..get('/posts/post_:id', (req, res) async {
+      var myParam = req.params['id'];
+      var post = await collPosts
+          .find(where.id(ObjectId.fromHexString(myParam)))
+          .toList();
+      print(post);
+      res.write(post);
+      await res.close();
+    })
+    // GET --- one --- post --- w/body_params
+    ..get('/posts/post', (req, res) async {
+      await req.parseBody();
+      var posts = await collPosts
+          .find(where
+              .eq('title', req.bodyAsMap['title'])
+              .or(where.eq('content', req.bodyAsMap['content'])))
+          .toList();
+      var json = jsonEncode(posts.toList());
+      res.write(json);
+      await res.close();
+    })
+    // POST --- one --- post
+    ..post('/posts/post', (req, res) async {
+      var authStatus = await auth.checkCookie(req, collUserSessions);
+      if (authStatus) {
+        await req.parseBody();
+        var file = req.uploadedFiles.first;
+        var fileName;
+        if (file.contentType.type == 'image') {
+          fileName =
+              '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().hour}-${DateTime.now().minute}-${DateTime.now().second}-${file.filename}';
+          var someFile = File('lib/covers/${fileName}');
+          await file.data.pipe(someFile.openWrite());
+        } else {
+          //TO-DO: server validation?
+          //await res.close();
+        }
+        var newPost = {
+          'title': req.bodyAsMap['title'],
+          'content': req.bodyAsMap['content'],
+          'picture': fileName,
+        };
+        await collPosts.save(newPost);
+        await res.redirect('/posts');
+      } else {
+        await res.redirect('/login');
+      }
+    })
+    // DELETE --- one --- post
+    ..delete('/posts/post', (req, res) async {
+      var authStatus = await auth.checkCookie(req, collUserSessions);
+      if (authStatus) {
+        await req.parseBody();
+        var postToDelete = req.bodyAsMap['id'];
+        await collPosts.remove(where.id(ObjectId.parse(postToDelete)));
+        await res.close();
+      } else {
+        await res.redirect('/login');
+      }
+    })
+    // PATCH --- one --- post
+    ..patch('/posts/post', (req, res) async {
+      await req.parseBody();
+      var updateId = req.bodyAsMap['id'];
+      if (req.bodyAsMap['title'] != null) {
+        await collPosts.update(where.id(ObjectId.parse(updateId)),
+            modify.set('title', req.bodyAsMap['title']));
+      }
+      if (req.bodyAsMap['content'] != null) {
+        await collPosts.update(where.id(ObjectId.parse(updateId)),
+            modify.set('content', req.bodyAsMap['content']));
+      }
+      if (req.bodyAsMap['content'] != null) {
+        await collPosts.update(where.id(ObjectId.parse(updateId)),
+            modify.set('content', req.bodyAsMap['content']));
+      }
+      if (req.uploadedFiles.isNotEmpty) {
+        var file = req.uploadedFiles.first;
+        if (file.contentType.type == 'image') {
+          var fileName =
+              '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().hour}-${DateTime.now().minute}-${DateTime.now().second}-${file.filename}';
+          var someFile = File('lib/covers/${fileName}');
+          await collPosts.update(where.id(ObjectId.parse(updateId)),
+              modify.set('picture', fileName));
+          await file.data.pipe(someFile.openWrite());
+        } else {
+          //TO-DO: server validation?
+          //await res.close();
+        }
+      }
+    })
+    // --- one --- picture ---
+    ..get('/lib/covers/:name', (req, res) async {
+      var fileName = req.params['name'];
+      await res.redirect('$assetsPath$fileName');
+      await res.close();
+    });
+
+  /////////////START SERVER
+
+  await http.startServer('localhost', 3000);
+}
