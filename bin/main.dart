@@ -87,31 +87,31 @@ void main() async {
     // UNCOMMENT FOR REGISTRATION USE CASE
     //
     //
-    // ..get('/register', (req, res) async {
-    //   var authStatus = await auth.checkCookie(req, collUserSessions);
-    //   if (!authStatus) {
-    //     res.headers.addAll({'Set-Cookie': 'userToken=;Max-Age=0'});
-    //     await res.render('register');
-    //   } else {
-    //     await res.redirect('/secret');
-    //   }
-    // })
-    // ..post('/register', (req, res) async {
-    //   var registerStatus = await auth.registerUser(req, collUsers);
-    //   if (registerStatus) {
-    //     var session = {
-    //       'username': req.bodyAsMap['username'],
-    //       'sessionToken': Uuid().v4()
-    //     };
-    //     await collUserSessions.save(session);
-    //     res.cookies.add(Cookie(
-    //         'userToken', base64.encode(utf8.encode(json.encode(session)))));
-    //     await res.redirect('/secret');
-    //   } else {
-    //     res.write('The user ${req.bodyAsMap['username']} already exist');
-    //     await res.close();
-    //   }
-    // })
+    ..get('/register', (req, res) async {
+      var authStatus = await auth.checkCookie(req, collUserSessions);
+      if (!authStatus) {
+        res.headers.addAll({'Set-Cookie': 'userToken=;Max-Age=0'});
+        await res.render('register');
+      } else {
+        await res.redirect('/secret');
+      }
+    })
+    ..post('/register', (req, res) async {
+      var registerStatus = await auth.registerUser(req, collUsers);
+      if (registerStatus) {
+        var session = {
+          'username': req.bodyAsMap['username'],
+          'sessionToken': Uuid().v4()
+        };
+        await collUserSessions.save(session);
+        res.cookies.add(Cookie(
+            'userToken', base64.encode(utf8.encode(json.encode(session)))));
+        await res.redirect('/secret');
+      } else {
+        res.write('The user ${req.bodyAsMap['username']} already exist');
+        await res.close();
+      }
+    })
     /////////////--------------------------------------------------API---METHODS
     // GET --- all --- posts
     ..get('/posts', (req, res) async {
