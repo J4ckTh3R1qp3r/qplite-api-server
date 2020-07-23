@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import 'package:angel_simple/src/config.dart' as config;
 import 'package:angel_simple/src/auth.dart' as auth;
+import 'package:angel_cors/angel_cors.dart';
 
 const assetsPath = 'http://assets.cutlet.co/';
 
@@ -20,6 +21,15 @@ void main() async {
   var app = Angel();
   var http = AngelHttp(app);
   await app.configure(configureServer);
+  // app.fallback(cors());
+  app.fallback(cors(
+    CorsOptions(
+      origin: 'http://cutlet.co/',
+      successStatus: 200, // default 204
+      allowedHeaders: ['POST', 'GET', 'PATCH', 'DELETE'],
+      preflightContinue: false, // default false
+    ),
+  ));
 
   var db = Db('mongodb://localhost:27017/qplite');
   await db.open();
