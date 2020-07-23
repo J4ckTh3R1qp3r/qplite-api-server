@@ -24,7 +24,7 @@ void main() async {
   // app.fallback(cors());
   app.fallback(cors(
     CorsOptions(
-      origin: 'http://cutlet.co/',
+      origin: 'http://cutlet.co',
       successStatus: 200, // default 204
       allowedHeaders: ['POST', 'GET', 'PATCH', 'DELETE'],
       preflightContinue: false, // default false
