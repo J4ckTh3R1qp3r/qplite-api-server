@@ -1,0 +1,92 @@
+[
+    {
+      "guid": "09e81e0f-1073-47f6-8516-b86036c5c617",
+      "city": "Saint-Petersburg",
+      "name": "Guam",
+      "type": "default",
+      "x": "20.4221",
+      "y": "9.6886",
+      "z": "18.9388"
+    },
+    {
+      "guid": "9e7b6e30-bfed-466e-b5a6-28bd9f17902d",
+      "city": "Saint-Petersburg",
+      "name": "Mississippi",
+      "type": "default",
+      "x": "29.8265",
+      "y": "8.4068",
+      "z": "17.0674"
+    },
+    {
+      "guid": "f29ce542-2c5a-4943-b1d8-dafd70ba36fb",
+      "city": "Saint-Petersburg",
+      "name": "Missouri",
+      "type": "default",
+      "x": "2.7053",
+      "y": "9.8545",
+      "z": "4.8696"
+    },
+    {
+      "guid": "b3e59502-3601-4840-b6ce-0e1aad949bdf",
+      "city": "Saint-Petersburg",
+      "name": "Illinois",
+      "type": "default",
+      "x": "21.3946",
+      "y": "9.4137",
+      "z": "23.1433"
+    },
+    {
+      "guid": "910762c0-d959-406b-8545-590a04dd960c",
+      "city": "Saint-Petersburg",
+      "name": "Pennsylvania",
+      "type": "default",
+      "x": "22.3146",
+      "y": "2.342",
+      "z": "7.6035"
+    },
+    {
+      "guid": "3e2425c3-c6fc-4e83-b2d2-c65fcec9d5b0",
+      "city": "Moscow",
+      "name": "Montana",
+      "type": "default",
+      "x": "5.1973",
+      "y": "3.2119",
+      "z": "23.2784"
+    },
+    {
+      "guid": "854a46e9-772f-4e57-bd07-17d11f607c54",
+      "city": "Moscow",
+      "name": "Tennessee",
+      "type": "default",
+      "x": "27.4442",
+      "y": "4.8131",
+      "z": "16.2165"
+    },
+    {
+      "guid": "c1012b87-d899-49dc-9f1b-e7211a037b8b",
+      "city": "Moscow",
+      "name": "Marshall Islands",
+      "type": "default",
+      "x": "13.0981",
+      "y": "4.2563",
+      "z": "3.8861"
+    },
+    {
+      "guid": "0af068fb-1b85-48f8-ab13-3b566550eaf7",
+      "city": "Moscow",
+      "name": "Michigan",
+      "type": "default",
+      "x": "16.1515",
+      "y": "9.0437",
+      "z": "4.8269"
+    },
+    {
+      "guid": "d734bf07-af49-4e66-9252-4ef48bd92f1c",
+      "city": "Moscow",
+      "name": "Vermont",
+      "type": "default",
+      "x": "26.0679",
+      "y": "2.2712",
+      "z": "29.738"
+    }
+  ]

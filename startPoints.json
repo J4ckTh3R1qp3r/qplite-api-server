@@ -1,0 +1,56 @@
+[
+    {
+        "guid": "1438e500-c747-469b-be42-6cd70417259a",
+        "city": "Saint-Petersburg",
+        "name": "Main entrance",
+        "x": "0.9001",
+        "y": "0.0000",
+        "z": "0.9002",
+        "deg": "0.0"
+      },
+      {
+        "guid": "cb3d2ae8-e714-4c02-8728-597618be9fae",
+        "city": "Saint-Petersburg",
+        "name": "Content room",
+        "x": "19.2702",
+        "y": "0.0",
+        "z": "12.248",
+        "deg": "1.5708"
+      },
+      {
+        "guid": "bed1a1e5-d0ba-4b17-8761-29395107aa80",
+        "city": "Saint-Petersburg",
+        "name": "Meeting room",
+        "x": "19.2702",
+        "y": "0.0",
+        "z": "12.248",
+        "deg": "4.71239"
+      },
+      {
+        "guid": "d7497616-43d5-46b9-b104-3a7f3fc0c5f3",
+        "city": "Moscow",
+        "name": "Main entrance",
+        "x": "0.9001",
+        "y": "0.0000",
+        "z": "0.9002",
+        "deg": "0.0"
+      },
+      {
+        "guid": "b1cf5242-5ea8-48b4-93c8-cef07bd29c07",
+        "city": "Moscow",
+        "name": "Room 1",
+        "x": "19.2702",
+        "y": "0.0",
+        "z": "12.248",
+        "deg": "4.71239"
+      },
+      {
+        "guid": "162ce863-c0fb-45f9-aa9d-32753d6cfa1d",
+        "city": "Moscow",
+        "name": "Room 2",
+        "x": "19.2702",
+        "y": "0.0",
+        "z": "12.248",
+        "deg": "4.71239"
+      }
+]

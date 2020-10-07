@@ -11,7 +11,7 @@ environment:
 dependencies:
   angel_framework: ^2.1.0
   angel_jael: ^2.0.0
-  mongo_dart: ^0.4.0
+  mongo_dart: ^0.4.3
   angel_static: ^2.0.0
   file: ^5.2.1
   path: ^1.6.0

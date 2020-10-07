@@ -243,6 +243,7 @@ void main() async {
     //     await res.close();
     //   }
     // })
+
     /////////////--------------------------------------------------API---METHODS
     // GET --- all --- posts
     ..get('/posts', (req, res) async {
