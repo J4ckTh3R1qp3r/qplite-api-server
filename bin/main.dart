@@ -50,7 +50,7 @@ void main() async {
       String qrCode = req.bodyAsMap['qrCode'];
       if (qrCode != null) {
         var startPoint = await collStartPoints.find(where.eq('guid', qrCode)).toList();
-        startPoint == [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
+        startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
         await res.close();
       } else {
         res.write('PLEASE PROVIDE QR CODE STRING');
@@ -116,7 +116,7 @@ void main() async {
       String name = req.bodyAsMap['name'];
       if (name != null) {
         var startPoint = await collFinishPoints.find(where.eq('name', name)).toList();
-        startPoint == [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
+        startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
         await res.close();
       } else {
         res.write('PLEASE PROVIDE NAME STRING');
