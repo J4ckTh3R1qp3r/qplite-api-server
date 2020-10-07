@@ -38,8 +38,144 @@ void main() async {
   var collPosts = db.collection('posts');
   var collUsers = db.collection('users');
   var collUserSessions = db.collection('userSessions');
+  //-------- AR NAVIGATOR --------//
+  var collStartPoints = db.collection('startPoints');
+  var collFinishPoints = db.collection('finishPoints');
 
   app
+    //-------- AR NAVIGATOR --------//
+    //-------- START POINTS --------//
+    ..get('/startpoints/point', (req, res) async {
+      await req.parseBody();
+      String qrCode = req.bodyAsMap['qrCode'];
+      if (qrCode != null) {
+        var startPoint = await collStartPoints.find(where.eq('guid', qrCode)).toList();
+        startPoint == [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
+        await res.close();
+      } else {
+        res.write('PLEASE PROVIDE QR CODE STRING');
+        await res.close();
+      }
+    })
+    ..post('/startpoints/point', (req, res) async {
+      await req.parseBody();
+      var newPoint = {
+        'guid': req.bodyAsMap['guid'],
+        'city': req.bodyAsMap['city'],
+        'name': req.bodyAsMap['name'],
+        'x': double.parse(req.bodyAsMap['x']),
+        'y': double.parse(req.bodyAsMap['y']),
+        'z': double.parse(req.bodyAsMap['z']),
+        'deg': double.parse(req.bodyAsMap['deg']),
+      };
+      await collStartPoints.insert(newPoint);
+      res.write('SUCCESSFULLY ADDED ${req.bodyAsMap['name']}');
+      await res.close();
+    })
+    ..delete('/startpoints/point', (req, res) async {
+      await req.parseBody();
+      await collStartPoints.remove(where.eq('guid', req.bodyAsMap['guid']));
+      res.write('SUCCESSFULLY DELETED');
+      await res.close();
+    })
+    ..post('/startpoints', (req, res) async {
+      await req.parseBody();
+      var qrArray = json.decode(req.bodyAsMap['qrArray']);
+      List<Map<String, dynamic>> arrayToSave = [];
+      for (var item in qrArray) {
+        var newQrCode = {
+          'guid': item['guid'],
+          'city': item['city'],
+          'name': item['name'],
+          'x': double.parse(item['x']),
+          'y': double.parse(item['y']),
+          'z': double.parse(item['z']),
+          'deg': double.parse(item['deg']),
+        };
+        arrayToSave.add(newQrCode);
+      }
+      await collStartPoints.insertAll(arrayToSave);
+      res.write('SUCCESSFULLY INSERTED ${arrayToSave.length} CODES');
+      await res.close();
+    })
+    ..delete('/startpoints', (req, res) async {
+      await req.parseBody();
+      var deleteConfirm = req.bodyAsMap['confirm'];
+      if (deleteConfirm == 'true') {
+        await collStartPoints.drop();
+        res.write('ALL POINTS SUCCESSFULLY REMOVED');
+        await res.close();
+      } else {
+        res.write('WRONG REQUEST');
+        await res.close();
+      }
+    })
+    //-------- FINISH POINTS --------//
+    ..get('/finishpoints/point', (req, res) async {
+      await req.parseBody();
+      String name = req.bodyAsMap['name'];
+      if (name != null) {
+        var startPoint = await collFinishPoints.find(where.eq('name', name)).toList();
+        startPoint == [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
+        await res.close();
+      } else {
+        res.write('PLEASE PROVIDE NAME STRING');
+        await res.close();
+      }
+    })
+    ..post('/finishpoints/point', (req, res) async {
+      await req.parseBody();
+      var newPoint = {
+        'guid': req.bodyAsMap['guid'],
+        'city': req.bodyAsMap['city'],
+        'name': req.bodyAsMap['name'],
+        'type': req.bodyAsMap['type'],
+        'x': double.parse(req.bodyAsMap['x']),
+        'y': double.parse(req.bodyAsMap['y']),
+        'z': double.parse(req.bodyAsMap['z']),
+      };
+      await collFinishPoints.insert(newPoint);
+      res.write('SUCCESSFULLY ADDED ${req.bodyAsMap['name']}');
+      await res.close();
+    })
+    ..delete('/finishpoints/point', (req, res) async {
+      await req.parseBody();
+      await collFinishPoints.remove(where.eq('guid', req.bodyAsMap['guid']));
+      res.write('SUCCESSFULLY DELETED');
+      await res.close();
+    })
+    ..post('/finishpoints', (req, res) async {
+      await req.parseBody();
+      var qrArray = json.decode(req.bodyAsMap['arObjectsArray']);
+      List<Map<String, dynamic>> arrayToSave = [];
+      for (var item in qrArray) {
+        var newQrCode = {
+          'guid': item['guid'],
+          'city': item['city'],
+          'name': item['name'],
+          'type': item['type'],
+          'x': double.parse(item['x']),
+          'y': double.parse(item['y']),
+          'z': double.parse(item['z']),
+        };
+        arrayToSave.add(newQrCode);
+      }
+      await collFinishPoints.insertAll(arrayToSave);
+      res.write('SUCCESSFULLY INSERTED ${arrayToSave.length} OBJECTS');
+      await res.close();
+    })
+    ..delete('/finishpoints', (req, res) async {
+      await req.parseBody();
+      var deleteConfirm = req.bodyAsMap['confirm'];
+      if (deleteConfirm == 'true') {
+        await collFinishPoints.drop();
+        res.write('ALL OBJECTS SUCCESSFULLY REMOVED');
+        await res.close();
+      } else {
+        res.write('WRONG REQUEST');
+        await res.close();
+      }
+    })
     /////////////--------------------------------------------------AUTHORISATION
     ..get('/login', (req, res) async {
       var authStatus = await auth.checkCookie(req, collUserSessions);
@@ -51,18 +187,13 @@ void main() async {
       }
     })
     ..post('/login', (req, res) async {
-      var inputValidation =
-          await auth.checkInputs(req, collUsers, collUserSessions);
+      var inputValidation = await auth.checkInputs(req, collUsers, collUserSessions);
       if (!inputValidation) {
         res.write('Incorrect  login or password');
       } else {
-        var session = {
-          'username': req.bodyAsMap['username'],
-          'sessionToken': Uuid().v4()
-        };
+        var session = {'username': req.bodyAsMap['username'], 'sessionToken': Uuid().v4()};
         await collUserSessions.save(session);
-        res.cookies.add(Cookie(
-            'userToken', base64.encode(utf8.encode(json.encode(session)))));
+        res.cookies.add(Cookie('userToken', base64.encode(utf8.encode(json.encode(session)))));
         await res.redirect('/secret');
       }
     })
@@ -99,13 +230,9 @@ void main() async {
     ..post('/register', (req, res) async {
       var registerStatus = await auth.registerUser(req, collUsers);
       if (registerStatus) {
-        var session = {
-          'username': req.bodyAsMap['username'],
-          'sessionToken': Uuid().v4()
-        };
+        var session = {'username': req.bodyAsMap['username'], 'sessionToken': Uuid().v4()};
         await collUserSessions.save(session);
-        res.cookies.add(Cookie(
-            'userToken', base64.encode(utf8.encode(json.encode(session)))));
+        res.cookies.add(Cookie('userToken', base64.encode(utf8.encode(json.encode(session)))));
         await res.redirect('/secret');
       } else {
         res.write('The user ${req.bodyAsMap['username']} already exist');
@@ -138,9 +265,7 @@ void main() async {
     // GET --- one --- post --- by URI
     ..get('/posts/post_:id', (req, res) async {
       var myParam = req.params['id'];
-      var post = await collPosts
-          .find(where.id(ObjectId.fromHexString(myParam)))
-          .toList();
+      var post = await collPosts.find(where.id(ObjectId.fromHexString(myParam))).toList();
       print(post);
       res.write(post);
       await res.close();
@@ -148,11 +273,7 @@ void main() async {
     // GET --- one --- post --- w/body_params
     ..get('/posts/post', (req, res) async {
       await req.parseBody();
-      var posts = await collPosts
-          .find(where
-              .eq('title', req.bodyAsMap['title'])
-              .or(where.eq('content', req.bodyAsMap['content'])))
-          .toList();
+      var posts = await collPosts.find(where.eq('title', req.bodyAsMap['title']).or(where.eq('content', req.bodyAsMap['content']))).toList();
       var json = jsonEncode(posts.toList());
       res.write(json);
       await res.close();
@@ -201,16 +322,13 @@ void main() async {
       await req.parseBody();
       var updateId = req.bodyAsMap['id'];
       if (req.bodyAsMap['title'] != null) {
-        await collPosts.update(where.id(ObjectId.parse(updateId)),
-            modify.set('title', req.bodyAsMap['title']));
+        await collPosts.update(where.id(ObjectId.parse(updateId)), modify.set('title', req.bodyAsMap['title']));
       }
       if (req.bodyAsMap['content'] != null) {
-        await collPosts.update(where.id(ObjectId.parse(updateId)),
-            modify.set('content', req.bodyAsMap['content']));
+        await collPosts.update(where.id(ObjectId.parse(updateId)), modify.set('content', req.bodyAsMap['content']));
       }
       if (req.bodyAsMap['content'] != null) {
-        await collPosts.update(where.id(ObjectId.parse(updateId)),
-            modify.set('content', req.bodyAsMap['content']));
+        await collPosts.update(where.id(ObjectId.parse(updateId)), modify.set('content', req.bodyAsMap['content']));
       }
       if (req.uploadedFiles.isNotEmpty) {
         var file = req.uploadedFiles.first;
@@ -218,8 +336,7 @@ void main() async {
           var fileName =
               '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}-${DateTime.now().hour}-${DateTime.now().minute}-${DateTime.now().second}-${file.filename}';
           var someFile = File('lib/covers/${fileName}');
-          await collPosts.update(where.id(ObjectId.parse(updateId)),
-              modify.set('picture', fileName));
+          await collPosts.update(where.id(ObjectId.parse(updateId)), modify.set('picture', fileName));
           await file.data.pipe(someFile.openWrite());
         } else {
           //TO-DO: server validation?
