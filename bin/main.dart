@@ -78,6 +78,18 @@ void main() async {
       res.write('SUCCESSFULLY DELETED');
       await res.close();
     })
+    ..get('/startpoints', (req, res) async {
+      await req.parseBody();
+      String city = req.bodyAsMap['city'];
+      if (city != null) {
+        var allPointsByCity = await collStartPoints.find(where.eq('city', city)).toList();
+        allPointsByCity != [] ? res.write(jsonEncode(allPointsByCity.toList())) : res.write('NOT FOUND');
+        await res.close();
+      } else {
+        res.write('PLEASE PROVIDE CITY STRING');
+        await res.close();
+      }
+    })
     ..post('/startpoints', (req, res) async {
       await req.parseBody();
       var qrArray = json.decode(req.bodyAsMap['qrArray']);
@@ -115,7 +127,7 @@ void main() async {
       await req.parseBody();
       String name = req.bodyAsMap['name'];
       if (name != null) {
-        var startPoint = await collFinishPoints.find(where.eq('name', name)).toList();
+        var startPoint = await collFinishPoints.find(where.match('name', name)).toList();
         startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
         await res.close();
       } else {
@@ -143,6 +155,18 @@ void main() async {
       await collFinishPoints.remove(where.eq('guid', req.bodyAsMap['guid']));
       res.write('SUCCESSFULLY DELETED');
       await res.close();
+    })
+    ..get('/finishpoints', (req, res) async {
+      await req.parseBody();
+      String city = req.bodyAsMap['city'];
+      if (city != null) {
+        var allPointsByCity = await collFinishPoints.find(where.eq('city', city)).toList();
+        allPointsByCity != [] ? res.write(jsonEncode(allPointsByCity.toList())) : res.write('NOT FOUND');
+        await res.close();
+      } else {
+        res.write('PLEASE PROVIDE CITY STRING');
+        await res.close();
+      }
     })
     ..post('/finishpoints', (req, res) async {
       await req.parseBody();
