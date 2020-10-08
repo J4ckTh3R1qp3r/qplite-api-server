@@ -46,8 +46,7 @@ void main() async {
     //-------- AR NAVIGATOR --------//
     //-------- START POINTS --------//
     ..get('/startpoints/point', (req, res) async {
-      await req.parseBody();
-      String qrCode = req.bodyAsMap['qrCode'];
+      String qrCode = req.queryParameters['qrCode'];
       if (qrCode != null) {
         var startPoint = await collStartPoints.find(where.eq('guid', qrCode)).toList();
         startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
@@ -79,8 +78,7 @@ void main() async {
       await res.close();
     })
     ..get('/startpoints', (req, res) async {
-      await req.parseBody();
-      String city = req.bodyAsMap['city'];
+      String city = req.queryParameters['city'];
       if (city != null) {
         var allPointsByCity = await collStartPoints.find(where.eq('city', city)).toList();
         allPointsByCity != [] ? res.write(jsonEncode(allPointsByCity.toList())) : res.write('NOT FOUND');
@@ -124,8 +122,7 @@ void main() async {
     })
     //-------- FINISH POINTS --------//
     ..get('/finishpoints/point', (req, res) async {
-      await req.parseBody();
-      String name = req.bodyAsMap['name'];
+      String name = req.queryParameters['name'];
       if (name != null) {
         var startPoint = await collFinishPoints.find(where.match('name', name[0].toUpperCase() + name.substring(1))).toList();
         startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
@@ -157,8 +154,7 @@ void main() async {
       await res.close();
     })
     ..get('/finishpoints', (req, res) async {
-      await req.parseBody();
-      String city = req.bodyAsMap['city'];
+      String city = req.queryParameters['city'];
       if (city != null) {
         var allPointsByCity = await collFinishPoints.find(where.eq('city', city)).toList();
         allPointsByCity != [] ? res.write(jsonEncode(allPointsByCity.toList())) : res.write('NOT FOUND');
