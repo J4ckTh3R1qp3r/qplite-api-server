@@ -127,7 +127,7 @@ void main() async {
       await req.parseBody();
       String name = req.bodyAsMap['name'];
       if (name != null) {
-        var startPoint = await collFinishPoints.find(where.match('name', name)).toList();
+        var startPoint = await collFinishPoints.find(where.match('name', name[0].toUpperCase() + name.substring(1))).toList();
         startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
         await res.close();
       } else {
