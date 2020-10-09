@@ -49,10 +49,16 @@ void main() async {
       String qrCode = req.queryParameters['qrCode'];
       if (qrCode != null) {
         var startPoint = await collStartPoints.find(where.eq('guid', qrCode)).toList();
-        startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
+        startPoint.isNotEmpty
+            ? res.write(jsonEncode(startPoint.toList()))
+            : res.write([
+                {'"status"': '"NOT FOUND"'}
+              ]);
         await res.close();
       } else {
-        res.write('PLEASE PROVIDE QR CODE STRING');
+        res.write([
+          {'"status"': '"PLEASE PROVIDE QR CODE STRING"'}
+        ]);
         await res.close();
       }
     })
@@ -68,23 +74,33 @@ void main() async {
         'deg': double.parse(req.bodyAsMap['deg']),
       };
       await collStartPoints.insert(newPoint);
-      res.write('SUCCESSFULLY ADDED ${req.bodyAsMap['name']}');
+      res.write([
+        {'"status"': '"SUCCESSFULLY ADDED ${req.bodyAsMap['name']}"'}
+      ]);
       await res.close();
     })
     ..delete('/startpoints/point', (req, res) async {
       await req.parseBody();
       await collStartPoints.remove(where.eq('guid', req.bodyAsMap['guid']));
-      res.write('SUCCESSFULLY DELETED');
+      res.write([
+        {'"status"': '"SUCCESSFULLY DELETED"'}
+      ]);
       await res.close();
     })
     ..get('/startpoints', (req, res) async {
       String city = req.queryParameters['city'];
       if (city != null) {
         var allPointsByCity = await collStartPoints.find(where.eq('city', city)).toList();
-        allPointsByCity != [] ? res.write(jsonEncode(allPointsByCity.toList())) : res.write('NOT FOUND');
+        allPointsByCity != []
+            ? res.write(jsonEncode(allPointsByCity.toList()))
+            : res.write([
+                {'"status"': '"NOT FOUND"'}
+              ]);
         await res.close();
       } else {
-        res.write('PLEASE PROVIDE CITY STRING');
+        res.write([
+          {'"status"': '"PLEASE PROVIDE CITY STRING"'}
+        ]);
         await res.close();
       }
     })
@@ -105,7 +121,9 @@ void main() async {
         arrayToSave.add(newQrCode);
       }
       await collStartPoints.insertAll(arrayToSave);
-      res.write('SUCCESSFULLY INSERTED ${arrayToSave.length} CODES');
+      res.write([
+        {'"status"': '"SUCCESSFULLY INSERTED ${arrayToSave.length} CODES"'}
+      ]);
       await res.close();
     })
     ..delete('/startpoints', (req, res) async {
@@ -113,22 +131,33 @@ void main() async {
       var deleteConfirm = req.bodyAsMap['confirm'];
       if (deleteConfirm == 'true') {
         await collStartPoints.drop();
-        res.write('ALL POINTS SUCCESSFULLY REMOVED');
+        res.write([
+          {'"status"': '"ALL POINTS SUCCESSFULLY REMOVED"'}
+        ]);
         await res.close();
       } else {
-        res.write('WRONG REQUEST');
+        res.write([
+          {'"status"': '"WRONG REQUEST"'}
+        ]);
         await res.close();
       }
     })
     //-------- FINISH POINTS --------//
     ..get('/finishpoints/point', (req, res) async {
       String name = req.queryParameters['name'];
-      if (name != null) {
-        var startPoint = await collFinishPoints.find(where.match('name', name[0].toUpperCase() + name.substring(1))).toList();
-        startPoint != [] ? res.write(jsonEncode(startPoint.toList())) : res.write('NOT FOUND');
+      String guid = req.queryParameters['guid'];
+      if (name != null && guid == null) {
+        var finishPoint = await collFinishPoints.find(where.match('name', name[0].toUpperCase() + name.substring(1))).toList();
+        finishPoint != [] ? res.write(jsonEncode(finishPoint.toList())) : res.write('NOT FOUND');
+        await res.close();
+      } else if (name == null && guid != null) {
+        var finishPoint = await collFinishPoints.find(where.match('guid', guid)).toList();
+        finishPoint != [] ? res.write(jsonEncode(finishPoint.toList())) : res.write('NOT FOUND');
         await res.close();
       } else {
-        res.write('PLEASE PROVIDE NAME STRING');
+        res.write([
+          {'"status"': '"PLEASE PROVIDE NAME OR GUID STRING"'}
+        ]);
         await res.close();
       }
     })
@@ -144,23 +173,33 @@ void main() async {
         'z': double.parse(req.bodyAsMap['z']),
       };
       await collFinishPoints.insert(newPoint);
-      res.write('SUCCESSFULLY ADDED ${req.bodyAsMap['name']}');
+      res.write([
+        {'"status"': '"SUCCESSFULLY ADDED ${req.bodyAsMap['name']}"'}
+      ]);
       await res.close();
     })
     ..delete('/finishpoints/point', (req, res) async {
       await req.parseBody();
       await collFinishPoints.remove(where.eq('guid', req.bodyAsMap['guid']));
-      res.write('SUCCESSFULLY DELETED');
+      res.write([
+        {'"status"': '"SUCCESSFULLY DELETED"'}
+      ]);
       await res.close();
     })
     ..get('/finishpoints', (req, res) async {
       String city = req.queryParameters['city'];
       if (city != null) {
         var allPointsByCity = await collFinishPoints.find(where.eq('city', city)).toList();
-        allPointsByCity != [] ? res.write(jsonEncode(allPointsByCity.toList())) : res.write('NOT FOUND');
+        allPointsByCity != []
+            ? res.write(jsonEncode(allPointsByCity.toList()))
+            : res.write([
+                {'"status"': '"NOT FOUND"'}
+              ]);
         await res.close();
       } else {
-        res.write('PLEASE PROVIDE CITY STRING');
+        res.write([
+          {'"status"': '"PLEASE PROVIDE CITY STRING"'}
+        ]);
         await res.close();
       }
     })
@@ -181,7 +220,9 @@ void main() async {
         arrayToSave.add(newQrCode);
       }
       await collFinishPoints.insertAll(arrayToSave);
-      res.write('SUCCESSFULLY INSERTED ${arrayToSave.length} OBJECTS');
+      res.write([
+        {'"status"': '"SUCCESSFULLY INSERTED ${arrayToSave.length} OBJECTS"'}
+      ]);
       await res.close();
     })
     ..delete('/finishpoints', (req, res) async {
@@ -189,10 +230,14 @@ void main() async {
       var deleteConfirm = req.bodyAsMap['confirm'];
       if (deleteConfirm == 'true') {
         await collFinishPoints.drop();
-        res.write('ALL OBJECTS SUCCESSFULLY REMOVED');
+        res.write([
+          {'"status"': '"ALL OBJECTS SUCCESSFULLY REMOVED"'}
+        ]);
         await res.close();
       } else {
-        res.write('WRONG REQUEST');
+        res.write([
+          {'"status"': '"WRONG REQUEST"'}
+        ]);
         await res.close();
       }
     })
