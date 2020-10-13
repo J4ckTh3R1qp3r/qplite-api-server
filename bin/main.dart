@@ -146,8 +146,9 @@ void main() async {
     ..get('/finishpoints/point', (req, res) async {
       String name = req.queryParameters['name'];
       String guid = req.queryParameters['guid'];
+      String city = req.queryParameters['city'];
       if (name != null && guid == null) {
-        var finishPoint = await collFinishPoints.find(where.match('name', name[0].toUpperCase() + name.substring(1))).toList();
+        var finishPoint = await collFinishPoints.find(where.match('name', name[0].toUpperCase() + name.substring(1)).and(where.eq('city', city))).toList();
         finishPoint != [] ? res.write(jsonEncode(finishPoint.toList())) : res.write('NOT FOUND');
         await res.close();
       } else if (name == null && guid != null) {
